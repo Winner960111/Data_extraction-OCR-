@@ -1,1 +1,0 @@
-{"english_name": "Nazia Nazir", "birthday": "23/12/1972", "english_sex_letter": "F"}
