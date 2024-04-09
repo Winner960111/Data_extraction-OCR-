@@ -18,6 +18,7 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 openai_client = OpenAI(api_key = openai_api_key)
 
 def create_image_from_base64(base64_string, output_file):
+
     # Decode base64 string into bytes
     image_data = base64.b64decode(base64_string)
     
@@ -26,6 +27,24 @@ def create_image_from_base64(base64_string, output_file):
     
     # Save the image to a file
     image.save(output_file)
+
+def create_pdf_from_base64(base64_string, output_file):
+    # Decode the base64 string
+    decoded_data = base64.b64decode(base64_string)
+    
+    # Write the decoded data to a PDF file
+    with open(output_file, 'wb') as pdf_file:
+        pdf_file.write(decoded_data)
+
+def classify_base64_code(base64_code):
+    # Decode the base64 string
+    decoded_data = base64.b64decode(base64_code)
+    
+    # Check if it represents a PDF file
+    if decoded_data[:4] == b'%PDF':
+        return 'PDF'
+    else: 
+        return 'Image'
 
 def extract_data_image(file_name, id):
 
@@ -110,7 +129,7 @@ def extract_data_image(file_name, id):
         print(f"this is return value===>{response.choices[0].message.tool_calls[0].function.arguments}")
         return response.choices[0].message.tool_calls[0].function.arguments
 
-@app.route('/compare_ID', methods = ['GET', 'POST'])
+@app.route('/sponsor', methods = ['GET', 'POST'])
 def compare_id():
     try:
         full_name = request.json['full_name']
@@ -171,5 +190,45 @@ def compare_id():
         print(e)
         return 'Failed'
 
+@app.route('/member', methods = ['GET', 'POST'])
+def compare_member_id():
+    try:
+        emirates_id = request.json['emirates_id']
+        emirates_id_app_no = request.json['emirates_id_app_no']
+        first_name = request.json['first_name']
+        last_name = request.json['last_name']
+        member_uid = request.json['member_uid']
+        member_type = request.json['member_type']
+        date_of_birth = request.json['date_of_birth']
+        gender = request.json['gender']
+        nationality = request.json['nationality']
+        marital_status = request.json['marital_status']
+        passport_number = request.json['passport_number']
+        upload_visa_copy_base64 = request.json['upload_visa_copy_base64']
+        upload_passport_copy_base64 = request.json['upload_passport_copy_base64']
+        upload_emirates_id_base64 = request.json['upload_emirates_id_base64']
+
+        visa_img = "./data/visa.jpg"
+        passport = "./data/passport.jpg"
+        # Output file path for the PDF file
+        visa_pdf = "./data/visa.pdf"
+        if upload_visa_copy_base64:
+            res = classify_base64_code(upload_visa_copy_base64)
+            if res == 'PDF':
+                print("this is PDF")
+                create_pdf_from_base64(upload_visa_copy_base64, visa_pdf)
+            else:
+                print("this is image")
+                create_image_from_base64(upload_visa_copy_base64, visa_img)         
+
+        create_image_from_base64(upload_passport_copy_base64, passport)
+        if upload_emirates_id_base64:
+            eid_file = "./data/ID.jpg"
+            create_image_from_base64(upload_emirates_id_base64, eid_file)
+        return "OK"
+    except Exception as e:
+        print(e)
+        return 'Failed'
+    
 if __name__ == '__main__':
     app.run(debug=True, port = 5050, host='0.0.0.0')
