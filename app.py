@@ -125,6 +125,8 @@ def extract_data_member(file_name, id):
         if file_name == 'visa.pdf' or file_name == 'passport.pdf':
             loader = PyPDFLoader(f"./data/{file_name}")
             data = loader.load()[0].page_content
+            if data == '':
+                
             # print(f"this is data===>{data}")
         else:
             files = {"file": open(f"./data/{file_name}", 'rb')}
