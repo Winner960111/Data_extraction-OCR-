@@ -2,8 +2,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from datetime import datetime
 import base64
 import io
-from PIL import Image
 from flask_cors import CORS
+from PIL import Image
 import requests
 from dotenv import load_dotenv
 import os
@@ -69,7 +69,7 @@ def extract_data_sponsor(file_name, id):
                     "type": "function",
                     "function": {
                         "name": "extracte_info",
-                        "description": "extract the essetial information from given text. If the same content is repeated, ignore that.",
+                        "description": "extract the essetial information from given text. You should extract only information that is written by english. If the same content is repeated, ignore that.",
                         "parameters": {
                             "type": "object",
                             "properties": {
@@ -79,7 +79,7 @@ def extract_data_sponsor(file_name, id):
                                 },
                                 "ID_number":{
                                     "type":"string",
-                                    "description":"Extract the ID number from given information",
+                                    "description":"Extract the ID number from given information.",
                                 }
                             },
                             "required": ["english_name", "ID_number"]
@@ -93,7 +93,7 @@ def extract_data_sponsor(file_name, id):
                     "type": "function",
                     "function": {
                         "name": "extracte_info",
-                        "description": "extract the essetial information from given text. If the same content is repeated, ignore that.",
+                        "description": "extract the essetial information from given text.You should extract only information that is written by english. If the same content is repeated, ignore that.",
                         "parameters": {
                             "type": "object",
                             "properties": {
@@ -122,9 +122,10 @@ def extract_data_sponsor(file_name, id):
         print(f"this is return value===>{response.choices[0].message.tool_calls[0].function.arguments}")
         return response.choices[0].message.tool_calls[0].function.arguments
 def extract_data_member(file_name, id):
-        if file_name == 'visa.pdf':
+        if file_name == 'visa.pdf' or file_name == 'passport.pdf':
             loader = PyPDFLoader(f"./data/{file_name}")
             data = loader.load()[0].page_content
+            # print(f"this is data===>{data}")
         else:
             files = {"file": open(f"./data/{file_name}", 'rb')}
             url = "https://api.edenai.run/v2/ocr/ocr"
@@ -139,6 +140,9 @@ def extract_data_member(file_name, id):
 
             result = json.loads(response.text)
             data = result["google"]["text"]
+            if file_name == 'visa.jpg':
+                data = data.replace(" ","\n")
+            # print(f"this is data +++++>{data}")
 
         if id == 'pass':
             extract_info = [
@@ -146,21 +150,21 @@ def extract_data_member(file_name, id):
                     "type": "function",
                     "function": {
                         "name": "extracte_info",
-                        "description": "extract the essetial information from given text. If the same content is repeated, ignore that.",
+                        "description": "extract the essetial information from given text. You should extract only information that is written by english. If the same content is repeated, ignore that.",
                         "parameters": {
                             "type": "object",
                             "properties": {
                                 "surname": {
                                     "type": "string",
-                                    "description": "Extract the surname or last name from given information. If its information isn't exist in the contents, you should answer as empty.",
+                                    "description": "Extract the surname or full name from given information.",
                                 },
                                 "date_of_birth": {
                                     "type": "string",
                                     "description": "extract the birthday or date of birth from given information.",
                                 },
-                                "nationality":{
+                                "country_name":{
                                     "type":"string",
-                                    "description":"extract the nationality from given information."
+                                    "description":"extract the country name from given information."
                                 },
                                 "passport_number":{
                                     "type":"string",
@@ -169,7 +173,7 @@ def extract_data_member(file_name, id):
                                 
                                 
                             },
-                            "required": ["surname", "date_of_birth", "nationality", "passport_number"]
+                            "required": ["surname", "date_of_birth", "country_name", "passport_number"]
                         },
                     }
                 }
@@ -180,7 +184,7 @@ def extract_data_member(file_name, id):
                     "type": "function",
                     "function": {
                         "name": "extracte_info",
-                        "description": "extract the essetial information from given text. If the same content is repeated, ignore that.",
+                        "description": "extract the essetial information from given text. You should extract only information that is written by english. If the same content is repeated, ignore that.",
                         "parameters": {
                             "type": "object",
                             "properties": {
@@ -191,9 +195,41 @@ def extract_data_member(file_name, id):
                                 "date_of_birth": {
                                     "type": "string",
                                     "description": "extract the birthday or date of birth from given information.",
-                                },                                
+                                },  
+                                 "surname": {
+                                    "type": "string",
+                                    "description": "Extract the full name from given information. If its information isn't exist in the contents, you should answer as empty.",
+                                },                              
                             },
-                            "required": ["ID_number", "date_of_birth"]
+                            "required": ["ID_number", "date_of_birth", "surname"]
+                        },
+                    }
+                }
+            ]
+        elif file_name == 'visa.pdf':
+            extract_info = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "extracte_info",
+                        "description": "extract the essetial information from given text. You should extract only information that is written by english. If the same content is repeated, ignore that.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "date_of_birth": {
+                                    "type": "string",
+                                    "description": "extract the birthday or date of birth from given information. You should output only date information."
+                                },
+                                 "uid_number":{
+                                    "type":"string",
+                                    "description":"extract the U.I.D No from given information."
+                                },
+                                "surname": {
+                                    "type": "string",
+                                    "description": "Extract the full name from given information. If its information isn't exist in the contents, you should answer as empty.",
+                                }, 
+                            },
+                            "required": ["date_of_birth", "uid_number", "surname"]
                         },
                     }
                 }
@@ -204,21 +240,24 @@ def extract_data_member(file_name, id):
                     "type": "function",
                     "function": {
                         "name": "extracte_info",
-                        "description": "extract the essetial information from given text. If the same content is repeated, ignore that.",
+                        "description": "extract the essetial information from given text. You should extract only information that is written by english. If the same content is repeated, ignore that.",
                         "parameters": {
                             "type": "object",
                             "properties": {
                                 "date_of_birth": {
                                     "type": "string",
-                                    "description": "extract the birthday or date of birth from given information. You should output only date information."
+                                    "description": "extract the date of birth from given information. You should output only date information."
                                 },
-                                "nationality":{
+                                "uid_number":{
                                     "type":"string",
-                                    "description":"extract the nationality from given information. You should output only nationality information."
+                                    "description":"Extract the identity number from the given text. Refernece following format of identity number:'34523412'."
                                 },
-                                
+                                "full_name": {
+                                    "type": "string",
+                                    "description": "Extract the full name from given information. You can reference that full name is comprised by only capital letters.",
+                                }, 
                             },
-                            "required": ["date_of_birth", "nationality"]
+                            "required": ["date_of_birth", "uid_number", "full_name"]
                         },
                     }
                 }
@@ -235,35 +274,73 @@ def extract_data_member(file_name, id):
             temperature=0,
             tools=extract_info,
         )
-        # print(f"\nthis is return value===>{response.choices[0].message.tool_calls[0].function.arguments}")
+        print(f"\nthis is return value===>{response.choices[0].message.tool_calls[0].function.arguments}")
         return response.choices[0].message.tool_calls[0].function.arguments
 
-def re_extract(data):
-    extract_info = [
+def re_extract(data, id):
+    if id == 'visa':
+
+        extract_info = [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "extracte_info",
+                            "description": "extract the essetial information from given text. You should extract only information that is written by english. If the same content is repeated, ignore that.",
+                            "parameters": {
+                                "type": "object",
+                                "properties": {
+                                    "date_of_birth": {
+                                        "type": "string",
+                                        "description": "extract the birthday or date of birth from given information. You should output only date information. Reference following date format:11/01/1999."
+                                    },
+                                    "uid_number":{
+                                        "type":"string",
+                                        "description":"Extract the identity number from the given text. Refernece following identity number format:'34523412'"
+                                    },
+                                    "full_name": {
+                                        "type": "string",
+                                        "description": "Extract the full name from given information. You can reference that full name is comprised by only capital letters.",
+                                    }, 
+                                },
+                                "required": ["date_of_birth", "uid_number", "full_name"]
+                            },
+                        }
+                    }
+                ]
+    else:
+        extract_info = [
                 {
                     "type": "function",
                     "function": {
                         "name": "extracte_info",
-                        "description": "extract the essetial information from given text. If the same content is repeated, ignore that.",
+                        "description": "extract the essetial information from given text. You should extract only information that is written by english. If the same content is repeated, ignore that.",
                         "parameters": {
                             "type": "object",
                             "properties": {
+                                "surname": {
+                                    "type": "string",
+                                    "description": "Extract the surname or last name from given information. If its information isn't exist in the contents, you should answer as empty.",
+                                },
                                 "date_of_birth": {
                                     "type": "string",
-                                    "description": "extract the birthday or date of birth from given information. You should output only date information."
+                                    "description": "extract the birthday or date of birth from given information.",
                                 },
-                                "nationality":{
+                                "country_name":{
                                     "type":"string",
-                                    "description":"extract the nationality from given information. You should output only nationality information."
+                                    "description":"extract the country name from given information."
+                                },
+                                "passport_number":{
+                                    "type":"string",
+                                    "description":"extract only current passport number from given information."
                                 },
                                 
+                                
                             },
-                            "required": ["date_of_birth", "nationality"]
+                            "required": ["surname", "date_of_birth", "country_name", "passport_number"]
                         },
                     }
                 }
             ]
-
     messages = [
         {"role": "system", "content": "Please extract the essential information from the data that is inputted by user. You should answer in all of question."},
         {"role": "user", "content": data}
@@ -275,7 +352,7 @@ def re_extract(data):
         temperature=0,
         tools=extract_info,
     )
-    # print(f"\nthis is return value===>{response.choices[0].message.tool_calls[0].function.arguments}")
+    print(f"\nthis is reextract value===>{response.choices[0].message.tool_calls[0].function.arguments}")
     return response.choices[0].message.tool_calls[0].function.arguments
 
 @app.route('/sponsor', methods = ['GET', 'POST'])
@@ -284,56 +361,28 @@ def compare_id():
         full_name = request.json['full_name']
         eid_number = request.json['eid_number']
         eid_file_base64 = request.json['eid_file_base64']
-        passport_id_base64 = request.json['passport_id_base64']
 
         print(f"\nthis is data ===>{full_name}\n{eid_number}")
 
         # Output file path for the image
         eid_file = "./data/ID.jpg"
-        passport_file = "./data/passport.jpg"
 
-        # Call the function to create the image from base64 string
-        if passport_id_base64 == '':
+        create_image_from_base64(eid_file_base64, eid_file)
+    
+        id_data = extract_data_sponsor("ID.jpg", 'id')
+        id_data_json = json.loads(id_data)
+        compare_full_name = id_data_json['english_name']
 
-            print("\nthis is passport out\n")
-            create_image_from_base64(eid_file_base64, eid_file)
-        
-            id_data = extract_data_sponsor("ID.jpg", 'id')
-            id_data_json = json.loads(id_data)
-            compare_full_name = id_data_json['english_name']
-            compare_eid_number = id_data_json['ID_number']
+        compare_eid_number = id_data_json['ID_number']
 
-            percent = 0
-            if full_name == compare_full_name:
-                percent += 1
-            if eid_number == compare_eid_number:
-                percent += 1
+        percent = 0
+        if full_name.replace(" ", "") == compare_full_name.replace(" ",""):
+            percent += 1
+        if eid_number == compare_eid_number:
+            percent += 1
 
-            percent = int(percent/2*100)
-
-        else:
-            
-            print("\nthis is passport in\n")
-            
-            create_image_from_base64(eid_file_base64, eid_file)
-            id_data = extract_data_sponsor("ID.jpg", 'id')
-            id_data_json = json.loads(id_data)
-            compare_full_name = id_data_json['english_name']
-            compare_eid_number = id_data_json['ID_number']
-            create_image_from_base64(passport_id_base64, passport_file)
-            res_passport = extract_data_sponsor("passport.jpg", 'pass')
-            data_passport = json.loads(res_passport)
-            compare_pass_name = data_passport["english_name"]
-            percent = 0
-            if full_name == compare_full_name:
-                percent += 1
-            if eid_number == compare_eid_number:
-                percent += 1
-            if full_name == compare_pass_name:
-                percent += 1
-
-            percent = int(percent/3*100)
-
+        percent = int(percent/2*100)
+        print(f"percent===>{percent}")
         return str(percent)
     except Exception as e:
         print(e)
@@ -342,14 +391,15 @@ def compare_id():
 @app.route('/member', methods = ['GET', 'POST'])
 def compare_member_id():
     try:
-        input_data = {"emirates_id":"","last_name":"", "date_of_birth":"", "nationality":"", "passport_number":""}
-        visa_data_obj = {"emirates_id":"","last_name":"", "date_of_birth":"", "nationality":"", "passport_number":""}
-        id_data_obj = {"emirates_id":"","last_name":"", "date_of_birth":"", "nationality":"", "passport_number":""}
-        passport_data_obj = {"emirates_id":"","last_name":"", "date_of_birth":"", "nationality":"", "passport_number":""}
-        upload_visa_copy_base64 = request.json['upload_visa_copy_base64']
+        input_data = {"emirates_id":"","member_uid":"", "last_name":"", "date_of_birth":"", "nationality":"", "passport_number":""}
+        visa_data_obj = {"emirates_id":"", "member_uid":"","last_name":"", "date_of_birth":"", "nationality":"", "passport_number":""}
+        id_data_obj = {"emirates_id":"", "member_uid":"","last_name":"", "date_of_birth":"", "nationality":"", "passport_number":""}
+        passport_data_obj = {"emirates_id":"", "member_uid":"", "last_name":"", "date_of_birth":"", "nationality":"", "passport_number":""}
+        upload_visa_copy_base64 = request.json['upload_visa_id_base64']
         upload_passport_copy_base64 = request.json['upload_passport_copy_base64']
         upload_emirates_id_base64 = request.json['upload_emirates_id_base64']
         input_data["emirates_id"] = request.json['emirates_id']
+        input_data["member_uid"] = request.json['member_uid']
         input_data["last_name"] = request.json['last_name']
         input_data["date_of_birth"] = request.json['date_of_birth']
         input_data["nationality"] = request.json['nationality']
@@ -357,6 +407,7 @@ def compare_member_id():
         print(f"\nthis is input info ====>{input_data}")
         visa_img = "./data/visa.jpg"
         passport = "./data/passport.jpg"
+        passport_pdf = "./data/passport.pdf"
         # Output file path for the PDF file
         visa_pdf = "./data/visa.pdf"
         eid_file = "./data/ID.jpg"
@@ -368,90 +419,187 @@ def compare_member_id():
                 create_pdf_from_base64(upload_visa_copy_base64, visa_pdf)
                 extract_info = extract_data_member("visa.pdf","visa")
                 temp = json.loads(extract_info)
-                new_data = temp['date_of_birth'] + ' ' + temp['nationality']
-                visa_data = json.loads(re_extract(new_data))
+
+                new_data = temp['date_of_birth'] + ', ' + temp['surname'] + ', ' + temp['uid_number']
+                visa_data = json.loads(re_extract(new_data, 'visa'))
 
                 birthday_date = datetime.strptime(visa_data['date_of_birth'], '%d/%m/%Y')
                 formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-
                 visa_data_obj["date_of_birth"] = str(formatted_birthday)
-                visa_data_obj["nationality"] = visa_data['nationality']
+                visa_data_obj["member_uid"] = visa_data['uid_number']
+                visa_data_obj["last_name"] = visa_data['full_name']
 
-                print(f"\nthis is visa object===>{visa_data_obj}")
+                print(f"\nthis is visa object===>{visa_data_obj}") 
 
             else:
                 print("this is image")
                 create_image_from_base64(upload_visa_copy_base64, visa_img) 
                 extract_info = extract_data_member("visa.jpg","visa") 
                 temp = json.loads(extract_info)
-                new_data = temp['date_of_birth'] +' '+ temp['nationality']
-                visa_data = re_extract(new_data)
 
+                new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['uid_number'].replace(" ","\n")
+                visa_data = json.loads(re_extract(new_data, 'visa'))
                 birthday_date = datetime.strptime(visa_data['date_of_birth'], '%d/%m/%Y')
                 formatted_birthday = birthday_date.strftime('%Y-%m-%d')
                 visa_data_obj["date_of_birth"] = str(formatted_birthday)
-                visa_data_obj["nationality"] = visa_data['nationality']
-
+                visa_data_obj["member_uid"] = visa_data['uid_number']
+                visa_data_obj["last_name"] = visa_data['full_name']
                 print(f"\nthis is visa object===>{visa_data_obj}")  
 
-    
-        create_image_from_base64(upload_emirates_id_base64, eid_file)
-        extract_info = extract_data_member("ID.jpg","id")
-        id_data = json.loads(extract_info)
+        if upload_emirates_id_base64:
+            create_image_from_base64(upload_emirates_id_base64, eid_file)
+            extract_info = extract_data_member("ID.jpg","id")
+            id_data = json.loads(extract_info)
 
-        birthday_date = datetime.strptime(id_data['date_of_birth'], '%d/%m/%Y')
-        formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-        id_data_obj["emirates_id"] = id_data['ID_number']
-        id_data_obj["date_of_birth"] = str(formatted_birthday)
+            birthday_date = datetime.strptime(id_data['date_of_birth'], '%d/%m/%Y')
+            formatted_birthday = birthday_date.strftime('%Y-%m-%d')
+            id_data_obj["emirates_id"] = id_data['ID_number']
+            id_data_obj["last_name"] = id_data['surname']
+            id_data_obj["date_of_birth"] = str(formatted_birthday)
 
-        print(f"\nthis is id object===>{id_data_obj}")
+            print(f"\nthis is id object===>{id_data_obj}")
 
-        create_image_from_base64(upload_passport_copy_base64, passport)
-        extract_info = extract_data_member("passport.jpg","pass")
-        passport_data = json.loads(extract_info)
+        res = classify_base64_code(upload_passport_copy_base64)
+        if res == 'PDF':
+            print("this is passport PDF")
+            create_pdf_from_base64(upload_passport_copy_base64, passport_pdf)
+            extract_info = extract_data_member("passport.pdf","pass")
+            passport_data = json.loads(extract_info)
+            try:
+                birthday_date = datetime.strptime(passport_data['date_of_birth'], '%d %b %Y')
+            except ValueError:
+                birthday_date = datetime.strptime(passport_data['date_of_birth'], '%d %b %y')
 
-        birthday_date = datetime.strptime(passport_data['date_of_birth'], '%d %b %Y')
-        formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-        passport_data_obj["last_name"] = passport_data['surname']
-        passport_data_obj["date_of_birth"] = str(formatted_birthday)
-        passport_data_obj["nationality"] = passport_data['nationality']
-        passport_data_obj["passport_number"] = passport_data['passport_number']
+            formatted_birthday = birthday_date.strftime('%Y-%m-%d')
+            passport_data_obj["last_name"] = passport_data['surname']
+            passport_data_obj["date_of_birth"] = str(formatted_birthday)
+            passport_data_obj["nationality"] = passport_data['country_name'].split()[-1]
+            passport_data_obj["passport_number"] = passport_data['passport_number']
+
+        else:
+            print("this is passport image")
+            create_image_from_base64(upload_passport_copy_base64, passport)
+            extract_info = extract_data_member("passport.jpg","pass")
+            temp = json.loads(extract_info)
+
+            new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['surname'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number'].replace(" ", "\n")
+            passport_data = json.loads(re_extract(new_data, 'pass'))
+
+            date_formats = [
+                '%d %b %Y',  # e.g., "25 Dec 2020"
+                '%d %b %y',  # e.g., "25 Dec 20"
+                '%d %m %Y',  # e.g., "25 12 2020"
+                '%d/%m/%Y',   # e.g., "25/12/2020"
+                '%d-%m-%Y',
+                '%d/%m/%y'
+            ]
+
+            birthday_date = None
+
+            # Try each date format until successful
+            for date_format in date_formats:
+                try:
+                    birthday_date = datetime.strptime(passport_data['date_of_birth'], date_format)
+                    break  # Date parsed successfully; exit the loop
+                except ValueError:
+                    # This except block catches the ValueError if parsing fails,
+                    # and continues to the next iteration.
+                    continue                
+
+            formatted_birthday = birthday_date.strftime('%Y-%m-%d')
+            passport_data_obj["last_name"] = passport_data['surname']
+            passport_data_obj["date_of_birth"] = str(formatted_birthday)
+            passport_data_obj["nationality"] = passport_data['country_name'].split()[-1]
+            passport_data_obj["passport_number"] = passport_data['passport_number'].replace(" ","")
 
         print(f"\nthis is passport object===>{passport_data_obj}")
         
-        # input_data = {}
-        # visa_data_obj = {}
-        # id_data_obj = {}
-        # passport_data_obj = {}
-
-        array = ['emirates_id', 'last_name', 'date_of_birth', 'nationality', 'passport_number']
+        array = ['emirates_id','member_uid', 'date_of_birth', 'passport_number']
         success = 0
+        error = ''
         for item in array:
             count = 0
             if visa_data_obj[item]:
-                print(f"this ===>{item}")
                 if input_data[item] == visa_data_obj[item]:
                     count += 1
+                else:
+                    error = "Please upload higher quaility visa file than now."
             else:
                 count += 1
                 
             if id_data_obj[item]:
                 if input_data[item] == id_data_obj[item]:
                     count += 1
+                else:
+                    error = "Please upload higher quaility ID file than now."
             else:
                 count += 1
 
             if passport_data_obj[item]:
                 if input_data[item] == passport_data_obj[item]:
                     count += 1
+                else:
+                    error = "Please upload higher quaility passport file than now."
             else:
                 count += 1
             if count == 3:
                 success += 1
-        print(f"this is success ==>{success}")
-        percent = int(success/5*100)
+        count = 0
         
-        return str(percent)
+        if visa_data_obj['last_name']:
+            if input_data['last_name'].replace(" ", "").lower() in visa_data_obj['last_name'].replace(" ", "").lower():
+                count += 1
+            else:
+               error = "Please upload higher quaility visa file than now."
+
+        else:
+            count += 1
+        
+        if id_data_obj['last_name']:
+            if input_data['last_name'].replace(" ", "").lower() in id_data_obj['last_name'].replace(" ", "").lower():
+                count += 1
+            else:
+               error = "Please upload higher quaility ID file than now."
+        else:
+            count += 1
+
+        if input_data['last_name'].replace(" ", "").lower() in passport_data_obj['last_name'].replace(" ", "").lower():
+                count += 1
+        else:
+            error = "Please upload higher quaility passport file than now."
+        if count == 3:
+            success += 1
+        
+        count = 0
+        
+        if visa_data_obj['nationality']:
+            if input_data['nationality'].replace(" ", "").lower() in visa_data_obj['nationality'].replace(" ", "").lower():
+                count += 1
+            else:
+                error = "Please upload higher quaility visa file than now."
+        else:
+            count += 1
+        
+        if id_data_obj['nationality']:
+            if input_data['nationality'].replace(" ", "").lower() in id_data_obj['nationality'].replace(" ", "").lower():
+                count += 1
+            else:
+                error = "Please upload higher quaility ID file than now."
+        else:
+            count += 1
+
+        if input_data['nationality'].replace(" ", "").lower() in passport_data_obj['nationality'].replace(" ", "").lower():
+                count += 1
+        else:
+            error = "Please upload higher quaility passport file than now."
+        if count == 3:
+            success += 1
+
+        print(f"this is success ==>{success}")
+        percent = int(success/6*100)
+        
+        print(f"this is percent===>{percent}")
+        return (str(percent) + ' %  ' + error)
     except Exception as e:
         print(e)
         return 'Failed'
