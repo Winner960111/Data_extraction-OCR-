@@ -1,13 +1,10 @@
-import pytesseract
-from PIL import Image
+import pypdfium2 as pdfium
 
-# Path to the scanned ID card PDF file
-pdf_file_path = "visa1.pdf"
+# Load a document
+pdf = pdfium.PdfDocument("./data/ID.pdf")
 
-# Open the PDF file and convert the first page to an image
-image = Image.open(pdf_file_path)
-
-# Perform OCR on the image to extract text
-extracted_text = pytesseract.image_to_string(image)
-
-print(extracted_text)
+# Loop over pages and render
+for i in range(len(pdf)):
+    page = pdf[i]
+    image = page.render(scale=4).to_pil()
+    image.save(f"./data/ID_{i}.jpg")
