@@ -46,8 +46,10 @@ def classify_base64_code(base64_code):
     # Check if it represents a PDF file
     if decoded_data[:4] == b'%PDF':
         return 'PDF'
-    else: 
+    elif decoded_data.startswith(b'\xFF\xD8\xFF') or decoded_data.startswith(b'\x89PNG\r\n\x1a\n'):
         return 'Image'
+    else:
+        return 'other'
 
 def extract_data_sponsor(file_name, id):
         if file_name == 'ID.pdf':
@@ -425,6 +427,7 @@ def page_number(file_name):
         
         # Get the total number of pages in the PDF by taking the length of the pages list
         totalPages = len(pdfReader.pages)
+    print(f"this is totalpage====>{totalPages}")
     return totalPages
 
 def generate_image(file_name):
@@ -447,30 +450,37 @@ def compare_id():
 
         # Output file path for the image
         eid_file = "./data/ID.jpg"
-
+        eid_pdf = "./data/ID.pdf"
         res = classify_base64_code(eid_file_base64)
 
         if res == 'PDF':
             print("this is ID PDF")
-            create_pdf_from_base64(eid_file_base64, eid_file)
+            create_pdf_from_base64(eid_file_base64, eid_pdf)
             page_res = page_number('./data/ID.pdf')
             if page_res > 2:
                 json_data = {
                 "score":0,
-                "status":'failed',
-                "error_msg":"ID file is over one page."
+                "status":'not processed',
+                "error_msg":"Wrong file selected, please select another one"
                 }
                 return json_data
             if page_res == 2:
-                generate_image('./data/ID.pdf')
+                generate_image(eid_pdf)
                 id_data = extract_data_sponsor("ID_0.jpg","id")
             else:
                 id_data = extract_data_sponsor("ID.pdf", 'id')
 
-        else:
+        elif res == 'Image':
             print("this is ID image")
             create_image_from_base64(eid_file_base64, eid_file)
             id_data = extract_data_sponsor("ID.jpg", 'id')
+        else:
+            json_data = {
+                "score":0,
+                "status":'not processed',
+                "error_msg":"can't process the file please select another one."
+                }
+            return json_data
 
         id_data_json = json.loads(id_data)
         compare_full_name = id_data_json['english_name']
@@ -478,29 +488,28 @@ def compare_id():
         compare_eid_number = id_data_json['ID_number']
 
         percent = 0
-        if full_name.replace(" ", "") == compare_full_name.replace(" ",""):
+        error = ""
+        if compare_full_name.replace(" ","").lower() in full_name.replace(" ", "").lower():
             percent += 1
+        else:
+            error = "full name"
         if eid_number == compare_eid_number:
             percent += 1
+        else:
+            error = "eid number"
 
         percent = int(percent/2*100)
         if percent == 100:
             json_data = {
                 "score":percent,
-                "status":'success',
-                "error_msg":""
-            }
-        elif percent == 0:
-            json_data = {
-                "score":percent,
-                "status":'failed',
-                "error_msg":"information is incorrect."
+                "status":'processed',
+                "error_msg":"The information are correct."
             }
         else:
             json_data = {
                 "score":percent,
-                "status":'proceed',
-                "error_msg":"ID file is incorrect or low quality."
+                "status":'processed',
+                "error_msg":f"Not matching, the information that didn't match: {error}"
             }
         print(f"percent===>{json_data}")
         return json_data
@@ -541,10 +550,10 @@ def compare_member_id():
                 page_res = page_number(visa_pdf)
                 if page_res > 1:
                     json_data = {
-                    "score":0,
-                    "status":'failed',
-                    "error_msg":"Visa file is over one page."
-                    }
+                        "score":0,
+                        "status":'not processed',
+                        "error_msg":"Wrong file selected, please select another one"
+                        }
                     return json_data
                 
                 extract_info = extract_data_member("visa.pdf","visa")
@@ -578,7 +587,7 @@ def compare_member_id():
 
                 print(f"\nthis is visa object===>{visa_data_obj}") 
 
-            else:
+            elif res == 'Image':
                 print("this is image")
                 create_image_from_base64(upload_visa_copy_base64, visa_img) 
                 extract_info = extract_data_member("visa.jpg","visa") 
@@ -610,7 +619,14 @@ def compare_member_id():
                 visa_data_obj["member_uid"] = visa_data['uid_number']
                 visa_data_obj["last_name"] = visa_data['full_name']
                 print(f"\nthis is visa object===>{visa_data_obj}")  
-
+            else:
+                json_data = {
+                    "score":0,
+                    "status":'not processed',
+                    "error_msg":"can't process the file please select another one."
+                    }
+                return json_data
+            
         if upload_emirates_id_base64:
             res = classify_base64_code(upload_emirates_id_base64)
 
@@ -621,10 +637,10 @@ def compare_member_id():
                 page_res = page_number(eid_pdf)
                 if page_res > 2:
                     json_data = {
-                    "score":0,
-                    "status":'failed',
-                    "error_msg":"ID file is over one page."
-                    }
+                        "score":0,
+                        "status":'not processed',
+                        "error_msg":"Wrong file selected, please select another one"
+                        }
                     return json_data
                 if page_res == 2:
                     generate_image(eid_pdf)
@@ -632,10 +648,18 @@ def compare_member_id():
                 else:
                     extract_info = extract_data_member("ID.pdf","id")
 
-            else:
+            elif res == 'Image':
                 print("this is ID image")
                 create_image_from_base64(upload_emirates_id_base64, eid_file)
                 extract_info = extract_data_member("ID.jpg","id")
+            else:
+                json_data = {
+                    "score":0,
+                    "status":'not processed',
+                    "error_msg":"can't process the file please select another one."
+                    }
+                return json_data
+                
 
             temp = json.loads(extract_info)
             new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['ID_number'].replace(" ","\n")
@@ -665,7 +689,7 @@ def compare_member_id():
             id_data_obj["date_of_birth"] = str(formatted_birthday)
 
             print(f"\nthis is id object===>{id_data_obj}")
-
+            
         res = classify_base64_code(upload_passport_copy_base64)
 
         if res == 'PDF':
@@ -675,17 +699,24 @@ def compare_member_id():
             page_res = page_number(passport_pdf)
             if page_res > 1:
                 json_data = {
-                "score":0,
-                "status":'failed',
-                "error_msg":"passport file is over one page."
-                }
+                    "score":0,
+                    "status":'not processed',
+                    "error_msg":"Wrong file selected, please select another one"
+                    }
                 return json_data
             extract_info = extract_data_member("passport.pdf","pass")
 
-        else:
+        elif res == 'Image':
             print("this is passport image")
             create_image_from_base64(upload_passport_copy_base64, passport)
             extract_info = extract_data_member("passport.jpg","pass")
+        else:
+            json_data = {
+                    "score":0,
+                    "status":'not processed',
+                    "error_msg":"can't process the file please select another one."
+                    }
+            return json_data
 
         temp = json.loads(extract_info)
 
@@ -722,6 +753,18 @@ def compare_member_id():
 
         print(f"\nthis is passport object===>{passport_data_obj}")
         
+        #to check if we uploaded an EID type file or not
+        if input_data['member_uid'] and input_data['last_name'].replace(" ", "").lower() not in visa_data_obj['last_name'].replace(" ", "").lower() and input_data['member_uid'].replace(" ", "").lower() not in visa_data_obj['member_uid'].replace(" ", "").lower():
+            return 'Not the right visa file'
+        
+        #to check if we uploaded an EID type file or not
+        if input_data['emirates_id'] and input_data['last_name'].replace(" ", "").lower() not in id_data_obj['last_name'].replace(" ", "").lower() and input_data['emirates_id'].replace(" ", "").lower() not in id_data_obj['emirates_id'].replace(" ", "").lower():
+            return 'Not the right ID file'
+        
+        #to check if we uploaded an passport type file or not
+        if input_data['passport_number'] and input_data['last_name'].replace(" ", "").lower() not in id_data_obj['last_name'].replace(" ", "").lower() and input_data['passport_number'].replace(" ", "").lower() not in id_data_obj['passport_number'].replace(" ", "").lower():
+            return 'Not the right Passport file'
+
         array = ['emirates_id','member_uid','last_name','nationality', 'date_of_birth', 'passport_number']
         success = 0
         error = ''
@@ -732,12 +775,12 @@ def compare_member_id():
                     if input_data[item].replace(" ", "").lower() in visa_data_obj[item].replace(" ", "").lower():
                         count += 1
                     else:
-                        error = "Visa file is incorrect or low quality."
+                        error = f"{item} of Visa"
                 else:
                     if input_data[item] == visa_data_obj[item]:
                         count += 1
                     else:
-                        error = "Visa file is incorrect or low quality."
+                        error = f"{item} of Visa"
             else:
                 count += 1
                 
@@ -746,12 +789,12 @@ def compare_member_id():
                     if input_data[item].replace(" ", "").lower() in id_data_obj[item].replace(" ", "").lower():
                         count += 1
                     else:
-                        error = "ID file is incorrect or low quality."
+                        error = f"{item} of ID card"
                 else:
                     if input_data[item] == id_data_obj[item]:
                         count += 1
                     else:
-                        error = "ID file is incorrect or low quality."
+                        error = f"{item} of ID card"
             else:
                 count += 1
 
@@ -760,12 +803,12 @@ def compare_member_id():
                     if input_data[item].replace(" ", "").lower() in passport_data_obj[item].replace(" ", "").lower():
                         count +=1
                     else:
-                        error = "Passport file is incorrect or low quality."
+                        error = f"{item} of passport"
                 else:
                     if input_data[item] == passport_data_obj[item]:
                         count += 1
                     else:
-                        error = "Passport file is incorrect or low quality."
+                        error = f"{item} of passport"
             else:
                 count += 1
             if count == 3:
@@ -777,20 +820,14 @@ def compare_member_id():
         if percent == 100:
             json_data = {
                 "score":percent,
-                "status":'success',
-                "error_msg":""
-            }
-        elif percent == 0:
-            json_data = {
-                "score":percent,
-                "status":'failed',
-                "error_msg":"information is incorrect."
+                "status":'processed',
+                "error_msg":"The information are correct."
             }
         else:
             json_data = {
                 "score":percent,
-                "status":'proceed',
-                "error_msg":error
+                "status":'processed',
+                "error_msg":f"Not match, the inforamtion that didn't match:{error}"
             }
         print(f"this is percent===>{json_data}")
         return json_data
