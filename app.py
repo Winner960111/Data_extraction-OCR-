@@ -144,7 +144,6 @@ def extract_data_member(file_name, id):
         if file_name == 'visa.pdf' or file_name == 'passport.pdf' or file_name == 'ID.pdf':
             loader = PyPDFLoader(f"./data/{file_name}")
             data = loader.load()[0].page_content
-            print(f"this is pdf data ===>{data}")
             if data == '':
                 files = {"file": open(f"./data/{file_name}", 'rb')}
                 url = "https://api.edenai.run/v2/ocr/ocr"
@@ -177,8 +176,17 @@ def extract_data_member(file_name, id):
             data = result["google"]["text"]
             if file_name == 'visa.jpg':
                 data = data.replace(" ","\n")
-            # print(f"this is data +++++>{data}")
-
+        print(f"this is data +++++>{data}")
+        if id == 'visa':
+            if 'U.I.D' not in data.replace("\n","").replace(" ",""):
+                return 'no'
+        elif id == 'id':
+            if 'IDNumber' not in data.replace("\n","").replace(" ",""):
+                return 'no'
+        elif id == 'pass':
+            if 'passportn' in data.replace("\n","").replace(" ","").lower() and 'U.I.D' in data.replace("\n","").replace(" ",""):
+                return 'no'
+            
         if id == 'pass':
             print("I'm here")
             extract_info = [
@@ -557,6 +565,8 @@ def compare_member_id():
                     return json_data
                 
                 extract_info = extract_data_member("visa.pdf","visa")
+                if extract_info == 'no':
+                    return "Not the right visa file."
                 temp = json.loads(extract_info)
 
                 new_data = temp['date_of_birth'].replace(" ", "\n") + '\n' + temp["full_name"].replace(" ", "\n") + '\n' + temp['uid_number'].replace(" ","\n")
@@ -591,6 +601,8 @@ def compare_member_id():
                 print("this is image")
                 create_image_from_base64(upload_visa_copy_base64, visa_img) 
                 extract_info = extract_data_member("visa.jpg","visa") 
+                if extract_info == 'no':
+                    return "Not the right visa file."
                 temp = json.loads(extract_info)
 
                 new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['uid_number'].replace(" ","\n")
@@ -645,13 +657,19 @@ def compare_member_id():
                 if page_res == 2:
                     generate_image(eid_pdf)
                     extract_info = extract_data_member("ID_0.jpg","id")
+                    if extract_info == 'no':
+                        return "Not the right ID file."
                 else:
                     extract_info = extract_data_member("ID.pdf","id")
+                    if extract_info == 'no':
+                        return "Not the right ID file."
 
             elif res == 'Image':
                 print("this is ID image")
                 create_image_from_base64(upload_emirates_id_base64, eid_file)
                 extract_info = extract_data_member("ID.jpg","id")
+                if extract_info == 'no':
+                        return "Not the right ID file."
             else:
                 json_data = {
                     "score":0,
@@ -705,11 +723,15 @@ def compare_member_id():
                     }
                 return json_data
             extract_info = extract_data_member("passport.pdf","pass")
+            if extract_info == 'no':
+                        return "Not the right Passport file."
 
         elif res == 'Image':
             print("this is passport image")
             create_image_from_base64(upload_passport_copy_base64, passport)
             extract_info = extract_data_member("passport.jpg","pass")
+            if extract_info == 'no':
+                        return "Not the right Passport file."
         else:
             json_data = {
                     "score":0,
@@ -753,17 +775,17 @@ def compare_member_id():
 
         print(f"\nthis is passport object===>{passport_data_obj}")
         
-        #to check if we uploaded an EID type file or not
-        if input_data['member_uid'] and input_data['last_name'].replace(" ", "").lower() not in visa_data_obj['last_name'].replace(" ", "").lower() and input_data['member_uid'].replace(" ", "").lower() not in visa_data_obj['member_uid'].replace(" ", "").lower():
-            return 'Not the right visa file'
+        # #to check if we uploaded an EID type file or not
+        # if input_data['member_uid'] and input_data['last_name'].replace(" ", "").lower() not in visa_data_obj['last_name'].replace(" ", "").lower() and input_data['member_uid'].replace(" ", "").lower() not in visa_data_obj['member_uid'].replace(" ", "").lower():
+        #     return 'Not the right visa file'
         
-        #to check if we uploaded an EID type file or not
-        if input_data['emirates_id'] and input_data['last_name'].replace(" ", "").lower() not in id_data_obj['last_name'].replace(" ", "").lower() and input_data['emirates_id'].replace(" ", "").lower() not in id_data_obj['emirates_id'].replace(" ", "").lower():
-            return 'Not the right ID file'
+        # #to check if we uploaded an EID type file or not
+        # if input_data['emirates_id'] and input_data['last_name'].replace(" ", "").lower() not in id_data_obj['last_name'].replace(" ", "").lower() and input_data['emirates_id'].replace(" ", "").lower() not in id_data_obj['emirates_id'].replace(" ", "").lower():
+        #     return 'Not the right ID file'
         
-        #to check if we uploaded an passport type file or not
-        if input_data['passport_number'] and input_data['last_name'].replace(" ", "").lower() not in id_data_obj['last_name'].replace(" ", "").lower() and input_data['passport_number'].replace(" ", "").lower() not in id_data_obj['passport_number'].replace(" ", "").lower():
-            return 'Not the right Passport file'
+        # #to check if we uploaded an passport type file or not
+        # if input_data['last_name'].replace(" ", "").lower() not in passport_data_obj['last_name'].replace(" ", "").lower() and input_data['passport_number'].replace(" ", "").lower() not in passport_data_obj['passport_number'].replace(" ", "").lower():
+        #     return 'Not the right Passport file'
 
         array = ['emirates_id','member_uid','last_name','nationality', 'date_of_birth', 'passport_number']
         success = 0
