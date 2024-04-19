@@ -176,7 +176,7 @@ def extract_data_member(file_name, id):
             data = result["google"]["text"]
             if file_name == 'visa.jpg':
                 data = data.replace(" ","\n")
-        print(f"this is data +++++>{data}")
+        # print(f"this is data +++++>{data}")
         if id == 'visa':
             if 'U.I.D' not in data.replace("\n","").replace(" ",""):
                 return 'no'
@@ -389,10 +389,7 @@ def re_extract(data, id):
                         "parameters": {
                             "type": "object",
                             "properties": {
-                                "full_name": {
-                                    "type": "string",
-                                    "description": "Extract the surname from given information. If its information isn't exist in the contents, you should answer as empty.",
-                                },
+                               
                                 "date_of_birth": {
                                     "type": "string",
                                     "description": "extract the birthday or date of birth from given information.",
@@ -408,7 +405,7 @@ def re_extract(data, id):
                                 
                                 
                             },
-                            "required": ["full_name", "date_of_birth", "country_name", "passport_number"]
+                            "required": ["date_of_birth", "country_name", "passport_number"]
                         },
                     }
                 }
@@ -742,7 +739,7 @@ def compare_member_id():
 
         temp = json.loads(extract_info)
 
-        new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['surname'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
+        new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
         passport_data = json.loads(re_extract(new_data, 'pass'))
 
         date_formats = [
@@ -768,7 +765,7 @@ def compare_member_id():
                 continue                
 
         formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-        passport_data_obj["last_name"] = passport_data['full_name']
+        passport_data_obj["last_name"] =temp['surname']
         passport_data_obj["date_of_birth"] = str(formatted_birthday)
         passport_data_obj["nationality"] = passport_data['country_name'].split()[-1]
         passport_data_obj["passport_number"] = passport_data['passport_number'].replace(" ","")
