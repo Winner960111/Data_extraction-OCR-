@@ -560,13 +560,18 @@ def compare_member_id():
                         "error_msg":"Wrong file selected, please select another one"
                         }
                     return json_data
-                
-                extract_info = extract_data_member("visa.pdf","visa")
-                if extract_info == 'no':
-                    return "Not the right visa file."
-                temp = json.loads(extract_info)
+                while True:
+                    try:
+                        extract_info = extract_data_member("visa.pdf","visa")
+                        if extract_info == 'no':
+                            return "Not the right visa file."
+                        temp = json.loads(extract_info)
 
-                new_data = temp['date_of_birth'].replace(" ", "\n") + '\n' + temp["full_name"].replace(" ", "\n") + '\n' + temp['uid_number'].replace(" ","\n")
+                        new_data = temp['date_of_birth'].replace(" ", "\n") + '\n' + temp["full_name"].replace(" ", "\n") + '\n' + temp['uid_number'].replace(" ","\n")
+                        break
+                    except:
+                        print("re-attempt")
+
                 visa_data = json.loads(re_extract(new_data, 'visa'))
                 date_formats = [
                     '%d %b %Y',  # e.g., "25 Dec 2020"
@@ -597,12 +602,19 @@ def compare_member_id():
             elif res == 'Image':
                 print("this is image")
                 create_image_from_base64(upload_visa_copy_base64, visa_img) 
-                extract_info = extract_data_member("visa.jpg","visa") 
-                if extract_info == 'no':
-                    return "Not the right visa file."
-                temp = json.loads(extract_info)
 
-                new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['uid_number'].replace(" ","\n")
+                while True:
+                    try:
+                       extract_info = extract_data_member("visa.jpg","visa") 
+                       if extract_info == 'no':
+                           return "Not the right visa file."
+                       temp = json.loads(extract_info)
+
+                       new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['uid_number'].replace(" ","\n")
+                       break
+                    except:
+                        print("re-attempt")
+                
                 visa_data = json.loads(re_extract(new_data, 'visa'))
                 date_formats = [
                     '%d %b %Y',  # e.g., "25 Dec 2020"
@@ -653,20 +665,41 @@ def compare_member_id():
                     return json_data
                 if page_res == 2:
                     generate_image(eid_pdf)
-                    extract_info = extract_data_member("ID_0.jpg","id")
-                    if extract_info == 'no':
-                        return "Not the right ID file."
+                    while True:
+                        try:
+                            extract_info = extract_data_member("ID_0.jpg","id")
+                            if extract_info == 'no':
+                                return "Not the right ID file."
+                            temp = json.loads(extract_info)
+                            new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['ID_number'].replace(" ","\n")
+                            break
+                        except:
+                            print("re-attempt")
                 else:
-                    extract_info = extract_data_member("ID.pdf","id")
-                    if extract_info == 'no':
-                        return "Not the right ID file."
+                    while True:
+                        try:
+                            extract_info = extract_data_member("ID.pdf","id")
+                            if extract_info == 'no':
+                                return "Not the right ID file."
+                            temp = json.loads(extract_info)
+                            new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['ID_number'].replace(" ","\n")
+                            break
+                        except:
+                            print("re-attempt")
 
             elif res == 'Image':
                 print("this is ID image")
                 create_image_from_base64(upload_emirates_id_base64, eid_file)
-                extract_info = extract_data_member("ID.jpg","id")
-                if extract_info == 'no':
-                        return "Not the right ID file."
+                while True:
+                        try:
+                            extract_info = extract_data_member("ID.jpg","id")
+                            if extract_info == 'no':
+                                    return "Not the right ID file."
+                            temp = json.loads(extract_info)
+                            new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['ID_number'].replace(" ","\n")
+                            break
+                        except:
+                            print("re-attempt")
             else:
                 json_data = {
                     "score":0,
@@ -675,9 +708,6 @@ def compare_member_id():
                     }
                 return json_data
                 
-
-            temp = json.loads(extract_info)
-            new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['ID_number'].replace(" ","\n")
             id_data = json.loads(re_extract(new_data, 'id'))
             date_formats = [
                 '%d %b %Y',  # e.g., "25 Dec 2020"
@@ -719,16 +749,30 @@ def compare_member_id():
                     "error_msg":"Wrong file selected, please select another one"
                     }
                 return json_data
-            extract_info = extract_data_member("passport.pdf","pass")
-            if extract_info == 'no':
-                        return "Not the right Passport file."
-
+            while True:
+                try:
+                    extract_info = extract_data_member("passport.pdf","pass")
+                    if extract_info == 'no':
+                                return "Not the right Passport file."
+                    temp = json.loads(extract_info)
+                    new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
+                    break
+                except:
+                    print("re-attempt")
+            
         elif res == 'Image':
             print("this is passport image")
             create_image_from_base64(upload_passport_copy_base64, passport)
-            extract_info = extract_data_member("passport.jpg","pass")
-            if extract_info == 'no':
-                        return "Not the right Passport file."
+            while True:
+                try:
+                    extract_info = extract_data_member("passport.jpg","pass")
+                    if extract_info == 'no':
+                                return "Not the right Passport file."
+                    temp = json.loads(extract_info)
+                    new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
+                    break
+                except:
+                    print("re-attempt")
         else:
             json_data = {
                     "score":0,
@@ -736,10 +780,7 @@ def compare_member_id():
                     "error_msg":"can't process the file please select another one."
                     }
             return json_data
-
-        temp = json.loads(extract_info)
-
-        new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
+        
         passport_data = json.loads(re_extract(new_data, 'pass'))
 
         date_formats = [
@@ -771,18 +812,6 @@ def compare_member_id():
         passport_data_obj["passport_number"] = passport_data['passport_number'].replace(" ","")
 
         print(f"\nthis is passport object===>{passport_data_obj}")
-        
-        # #to check if we uploaded an EID type file or not
-        # if input_data['member_uid'] and input_data['last_name'].replace(" ", "").lower() not in visa_data_obj['last_name'].replace(" ", "").lower() and input_data['member_uid'].replace(" ", "").lower() not in visa_data_obj['member_uid'].replace(" ", "").lower():
-        #     return 'Not the right visa file'
-        
-        # #to check if we uploaded an EID type file or not
-        # if input_data['emirates_id'] and input_data['last_name'].replace(" ", "").lower() not in id_data_obj['last_name'].replace(" ", "").lower() and input_data['emirates_id'].replace(" ", "").lower() not in id_data_obj['emirates_id'].replace(" ", "").lower():
-        #     return 'Not the right ID file'
-        
-        # #to check if we uploaded an passport type file or not
-        # if input_data['last_name'].replace(" ", "").lower() not in passport_data_obj['last_name'].replace(" ", "").lower() and input_data['passport_number'].replace(" ", "").lower() not in passport_data_obj['passport_number'].replace(" ", "").lower():
-        #     return 'Not the right Passport file'
 
         array = ['emirates_id','member_uid','last_name','nationality', 'date_of_birth', 'passport_number']
         success = 0
@@ -794,12 +823,13 @@ def compare_member_id():
                     if input_data[item].replace(" ", "").lower() in visa_data_obj[item].replace(" ", "").lower():
                         count += 1
                     else:
-                        error = f"{item} of Visa"
+                        error = (f"{item} of Visa").replace("_", " ")
                 else:
                     if input_data[item] == visa_data_obj[item]:
                         count += 1
                     else:
-                        error = f"{item} of Visa"
+                        error = (f"{item} of Visa").replace("_", " ")
+
             else:
                 count += 1
                 
@@ -808,12 +838,12 @@ def compare_member_id():
                     if input_data[item].replace(" ", "").lower() in id_data_obj[item].replace(" ", "").lower():
                         count += 1
                     else:
-                        error = f"{item} of ID card"
+                        error = (f"{item} of ID card").replace("_", " ")
                 else:
                     if input_data[item] == id_data_obj[item]:
                         count += 1
                     else:
-                        error = f"{item} of ID card"
+                        error = (f"{item} of ID card").replace("_", " ")
             else:
                 count += 1
 
@@ -822,12 +852,12 @@ def compare_member_id():
                     if input_data[item].replace(" ", "").lower() in passport_data_obj[item].replace(" ", "").lower():
                         count +=1
                     else:
-                        error = f"{item} of passport"
+                        error = (f"{item} of passport").replace("_", " ")
                 else:
                     if input_data[item] == passport_data_obj[item]:
                         count += 1
                     else:
-                        error = f"{item} of passport"
+                        error = (f"{item} of passport").replace("_", " ")
             else:
                 count += 1
             if count == 3:
