@@ -67,6 +67,9 @@ def extract_data_sponsor(file_name, id):
             result = json.loads(response.text)
             data = result["amazon"]["text"]
             print(data)
+        elif file_name == 'company.pdf':
+            loader = PyPDFLoader(f"./data/{file_name}")
+            data = loader.load()[0].page_content
         else:
             files = {"file": open(f"./data/{file_name}", 'rb')}
             url = "https://api.edenai.run/v2/ocr/ocr"
@@ -112,16 +115,24 @@ def extract_data_sponsor(file_name, id):
                     "type": "function",
                     "function": {
                         "name": "extracte_info",
-                        "description": "extract the essetial information from given text.You should extract only information that is written by english. If the same content is repeated, ignore that.",
+                        "description": "extract the essetial information from given text. You should extract only information that is written by english. If the same content is repeated, ignore that.",
                         "parameters": {
                             "type": "object",
                             "properties": {
-                                "english_name": {
+                                "company_name": {
                                     "type": "string",
-                                    "description": "Extract the full name from given information.",
+                                    "description": "Extract the trade name from given information.",
                                 },
+                                "trading_license_number":{
+                                    "type":"string",
+                                    "description":"Extract the license number from given information.",
+                                },
+                                "expiry_date":{
+                                    "type":"string",
+                                    "description":"Extract the expiry date from given information.",
+                                }
                             },
-                            "required": ["name"]
+                            "required": ["company_name", "trading_license_number", "expiry_date"]
                         },
                     }
                 }
@@ -425,6 +436,7 @@ def re_extract(data, id):
     return response.choices[0].message.tool_calls[0].function.arguments
 
 def page_number(file_name):
+
     # Use a context manager to ensure the file is properly closed after its block finishes execution
     with open(file_name, 'rb') as file:
         # Create a PdfReader object from the file data
@@ -434,6 +446,18 @@ def page_number(file_name):
         totalPages = len(pdfReader.pages)
     print(f"this is totalpage====>{totalPages}")
     return totalPages
+
+def split_pdf(file_path):
+
+    with open(file_path, 'rb') as file:
+        pdf = PyPDF2.PdfReader(file)
+
+        pdf_writer = PyPDF2.PdfWriter()
+
+        pdf_writer.add_page(pdf.pages[0])
+
+        with open("./data/company.pdf", 'wb') as new_file:
+            pdf_writer.write(new_file)
 
 def generate_image(file_name):
     pdf = pdfium.PdfDocument(file_name)
@@ -450,74 +474,156 @@ def compare_id():
         full_name = request.json['full_name']
         eid_number = request.json['eid_number']
         eid_file_base64 = request.json['eid_file_base64']
+        company_name = request.json['company_name']
+        trading_license_number = request.json['trading_license_number']
+        expiry_date = request.json['expiry_date']
+        company_trading_copy_base64 = request.json['company_trading_copy_base64']
+        print(f"\nthis is data ===>{full_name}\n{eid_number}\n{company_name}\n{trading_license_number}\n{expiry_date}")
 
-        print(f"\nthis is data ===>{full_name}\n{eid_number}")
+        if company_trading_copy_base64:
+            company_file = "./data/company.jpg"
+            company_pdf = "./data/company.pdf"
+            res = classify_base64_code(company_trading_copy_base64)
 
-        # Output file path for the image
-        eid_file = "./data/ID.jpg"
-        eid_pdf = "./data/ID.pdf"
-        res = classify_base64_code(eid_file_base64)
+            if res == 'PDF':
+                print("this is company PDF")
+                create_pdf_from_base64(company_trading_copy_base64, company_pdf)
+                split_pdf(company_pdf)
+                company_data = extract_data_sponsor("company.pdf", 'company')
 
-        if res == 'PDF':
-            print("this is ID PDF")
-            create_pdf_from_base64(eid_file_base64, eid_pdf)
-            page_res = page_number('./data/ID.pdf')
-            if page_res > 2:
-                json_data = {
-                "score":0,
-                "status":'not processed',
-                "error_msg":"Wrong file selected, please select another one"
-                }
-                return json_data
-            if page_res == 2:
-                generate_image(eid_pdf)
-                id_data = extract_data_sponsor("ID_0.jpg","id")
+            elif res == 'Image':
+                print("this is company image")
+                create_image_from_base64(company_trading_copy_base64, company_file)
+                company_data = extract_data_sponsor("company.jpg", 'company')
             else:
-                id_data = extract_data_sponsor("ID.pdf", 'id')
+                json_data = {
+                    "score":0,
+                    "status":'not processed',
+                    "error_msg":"can't process the file please select another one."
+                    }
+                return json_data
+            
+            company_data_json = json.loads(company_data)
+            compare_company_name = company_data_json['company_name']
+            compare_trading_number = company_data_json['trading_license_number']
+            percent = 0
+            error = ""
+            if company_name.replace(" ", "").lower() in compare_company_name.replace(" ","").lower():
+                percent += 1
+            else:
+                error = "company name"
+            if compare_trading_number == trading_license_number:
+                percent += 1
+            else:
+                error = "trading license number"
 
-        elif res == 'Image':
-            print("this is ID image")
-            create_image_from_base64(eid_file_base64, eid_file)
-            id_data = extract_data_sponsor("ID.jpg", 'id')
-        else:
-            json_data = {
-                "score":0,
-                "status":'not processed',
-                "error_msg":"can't process the file please select another one."
+            date_formats = [
+                    '%d %b %Y',  # e.g., "25 Dec 2020"
+                    '%d %b %y',  # e.g., "25 Dec 20"
+                    '%d %m %Y',  # e.g., "25 12 2020"
+                    '%d/%m/%Y',   # e.g., "25/12/2020"
+                    '%d-%m-%Y',
+                    '%d/%m/%y',
+                    '%Y/%m/%d'
+                ]
+
+            birthday_date = None
+
+            # Try each date format until successful
+            for date_format in date_formats:
+                try:
+                    birthday_date = datetime.strptime(company_data_json['expiry_date'], date_format)
+                    break  # Date parsed successfully; exit the loop
+                except ValueError:
+                    continue
+            formatted_birthday = birthday_date.strftime('%Y-%m-%d')
+            if expiry_date == formatted_birthday:
+                percent += 1
+            else:
+                error = "Expiry date"
+
+            percent = int(percent/3*100)
+            if percent == 100:
+                json_data = {
+                    "score":percent,
+                    "status":'processed',
+                    "error_msg":"The information are correct."
                 }
+            else:
+                json_data = {
+                    "score":percent,
+                    "status":'processed',
+                    "error_msg":f"Not matching, the information that didn't match: {error}"
+                }
+            print(f"percent===>{json_data}")
             return json_data
 
-        id_data_json = json.loads(id_data)
-        compare_full_name = id_data_json['english_name']
-
-        compare_eid_number = id_data_json['ID_number']
-
-        percent = 0
-        error = ""
-        if compare_full_name.replace(" ","").lower() in full_name.replace(" ", "").lower():
-            percent += 1
         else:
-            error = "full name"
-        if eid_number == compare_eid_number:
-            percent += 1
-        else:
-            error = "eid number"
+            # Output file path for the image
+            eid_file = "./data/ID.jpg"
+            eid_pdf = "./data/ID.pdf"
+            res = classify_base64_code(eid_file_base64)
 
-        percent = int(percent/2*100)
-        if percent == 100:
-            json_data = {
-                "score":percent,
-                "status":'processed',
-                "error_msg":"The information are correct."
-            }
-        else:
-            json_data = {
-                "score":percent,
-                "status":'processed',
-                "error_msg":f"Not matching, the information that didn't match: {error}"
-            }
-        print(f"percent===>{json_data}")
-        return json_data
+            if res == 'PDF':
+                print("this is ID PDF")
+                create_pdf_from_base64(eid_file_base64, eid_pdf)
+                page_res = page_number('./data/ID.pdf')
+                if page_res > 2:
+                    json_data = {
+                    "score":0,
+                    "status":'not processed',
+                    "error_msg":"Wrong file selected, please select another one"
+                    }
+                    return json_data
+                if page_res == 2:
+                    generate_image(eid_pdf)
+                    id_data = extract_data_sponsor("ID_0.jpg","id")
+                else:
+                    id_data = extract_data_sponsor("ID.pdf", 'id')
+
+            elif res == 'Image':
+                print("this is ID image")
+                create_image_from_base64(eid_file_base64, eid_file)
+                id_data = extract_data_sponsor("ID.jpg", 'id')
+            else:
+                json_data = {
+                    "score":0,
+                    "status":'not processed',
+                    "error_msg":"can't process the file please select another one."
+                    }
+                return json_data
+
+            id_data_json = json.loads(id_data)
+            compare_full_name = id_data_json['english_name']
+
+            compare_eid_number = id_data_json['ID_number']
+
+            percent = 0
+            error = ""
+            if compare_full_name.replace(" ","").lower() in full_name.replace(" ", "").lower():
+                percent += 1
+            else:
+                error = "full name"
+            if eid_number == compare_eid_number:
+                percent += 1
+            else:
+                error = "eid number"
+
+            percent = int(percent/2*100)
+            if percent == 100:
+                json_data = {
+                    "score":percent,
+                    "status":'processed',
+                    "error_msg":"The information are correct."
+                }
+            else:
+                json_data = {
+                    "score":percent,
+                    "status":'processed',
+                    "error_msg":f"Not matching, the information that didn't match: {error}"
+                }
+            print(f"percent===>{json_data}")
+            return json_data
     except Exception as e:
         print(e)
         return 'Failed'
