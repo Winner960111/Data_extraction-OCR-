@@ -476,9 +476,8 @@ def compare_id():
         eid_file_base64 = request.json['eid_file_base64']
         company_name = request.json['company_name']
         trading_license_number = request.json['trading_license_number']
-        expiry_date = request.json['expiry_date']
         company_trading_copy_base64 = request.json['company_trading_copy_base64']
-        print(f"\nthis is data ===>{full_name}\n{eid_number}\n{company_name}\n{trading_license_number}\n{expiry_date}")
+        print(f"\nthis is data ===>{full_name}\n{eid_number}\n{company_name}\n{trading_license_number}")
 
         if company_trading_copy_base64:
             company_file = "./data/company.jpg"
@@ -536,11 +535,14 @@ def compare_id():
                     break  # Date parsed successfully; exit the loop
                 except ValueError:
                     continue
-            formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-            if expiry_date == formatted_birthday:
+            formatted_birthday = str(birthday_date.strftime('%Y-%m-%d'))
+            current_date = str(datetime.now().date())
+            print(f"this is date===>{formatted_birthday}\n{current_date}")
+
+            if formatted_birthday > current_date:
                 percent += 1
             else:
-                error = "Expiry date"
+                return "Expiry date was expired."
 
             percent = int(percent/3*100)
             if percent == 100:
@@ -563,7 +565,7 @@ def compare_id():
             eid_file = "./data/ID.jpg"
             eid_pdf = "./data/ID.pdf"
             res = classify_base64_code(eid_file_base64)
-
+            
             if res == 'PDF':
                 print("this is ID PDF")
                 create_pdf_from_base64(eid_file_base64, eid_pdf)
@@ -677,31 +679,35 @@ def compare_member_id():
                         break
                     except:
                         print("re-attempt")
-
-                visa_data = json.loads(re_extract(new_data, 'visa'))
-                date_formats = [
-                    '%d %b %Y',  # e.g., "25 Dec 2020"
-                    '%d %b %y',  # e.g., "25 Dec 20"
-                    '%d %m %Y',  # e.g., "25 12 2020"
-                    '%d/%m/%Y',   # e.g., "25/12/2020"
-                    '%d-%m-%Y',
-                    '%d/%m/%y',
-                    '%Y/%m/%d'
-                ]
-
-                birthday_date = None
-
-                # Try each date format until successful
-                for date_format in date_formats:
+                while True:
                     try:
-                        birthday_date = datetime.strptime(visa_data['date_of_birth'], date_format)
-                        break  # Date parsed successfully; exit the loop
-                    except ValueError:
-                        continue
-                formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-                visa_data_obj["date_of_birth"] = str(formatted_birthday)
-                visa_data_obj["member_uid"] = visa_data['uid_number']
-                visa_data_obj["last_name"] = visa_data['full_name']
+                        visa_data = json.loads(re_extract(new_data, 'visa'))
+                        date_formats = [
+                            '%d %b %Y',  # e.g., "25 Dec 2020"
+                            '%d %b %y',  # e.g., "25 Dec 20"
+                            '%d %m %Y',  # e.g., "25 12 2020"
+                            '%d/%m/%Y',   # e.g., "25/12/2020"
+                            '%d-%m-%Y',
+                            '%d/%m/%y',
+                            '%Y/%m/%d'
+                        ]
+
+                        birthday_date = None
+
+                        # Try each date format until successful
+                        for date_format in date_formats:
+                            try:
+                                birthday_date = datetime.strptime(visa_data['date_of_birth'], date_format)
+                                break  # Date parsed successfully; exit the loop
+                            except ValueError:
+                                continue
+                        formatted_birthday = birthday_date.strftime('%Y-%m-%d')
+                        visa_data_obj["date_of_birth"] = str(formatted_birthday)
+                        visa_data_obj["member_uid"] = visa_data['uid_number']
+                        visa_data_obj["last_name"] = visa_data['full_name']
+                        break
+                    except:
+                        print("re-attempt")
 
                 print(f"\nthis is visa object===>{visa_data_obj}") 
 
@@ -720,31 +726,36 @@ def compare_member_id():
                        break
                     except:
                         print("re-attempt")
-                
-                visa_data = json.loads(re_extract(new_data, 'visa'))
-                date_formats = [
-                    '%d %b %Y',  # e.g., "25 Dec 2020"
-                    '%d %b %y',  # e.g., "25 Dec 20"
-                    '%d %m %Y',  # e.g., "25 12 2020"
-                    '%d/%m/%Y',   # e.g., "25/12/2020"
-                    '%d-%m-%Y',
-                    '%d/%m/%y',
-                    '%Y/%m/%d'
-                ]
-
-                birthday_date = None
-
-                # Try each date format until successful
-                for date_format in date_formats:
+                while True:
                     try:
-                        birthday_date = datetime.strptime(visa_data['date_of_birth'], date_format)
-                        break  # Date parsed successfully; exit the loop
-                    except ValueError:
-                        continue   
-                formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-                visa_data_obj["date_of_birth"] = str(formatted_birthday)
-                visa_data_obj["member_uid"] = visa_data['uid_number']
-                visa_data_obj["last_name"] = visa_data['full_name']
+
+                        visa_data = json.loads(re_extract(new_data, 'visa'))
+                        date_formats = [
+                            '%d %b %Y',  # e.g., "25 Dec 2020"
+                            '%d %b %y',  # e.g., "25 Dec 20"
+                            '%d %m %Y',  # e.g., "25 12 2020"
+                            '%d/%m/%Y',   # e.g., "25/12/2020"
+                            '%d-%m-%Y',
+                            '%d/%m/%y',
+                            '%Y/%m/%d'
+                        ]
+
+                        birthday_date = None
+
+                        # Try each date format until successful
+                        for date_format in date_formats:
+                            try:
+                                birthday_date = datetime.strptime(visa_data['date_of_birth'], date_format)
+                                break  # Date parsed successfully; exit the loop
+                            except ValueError:
+                                continue   
+                        formatted_birthday = birthday_date.strftime('%Y-%m-%d')
+                        visa_data_obj["date_of_birth"] = str(formatted_birthday)
+                        visa_data_obj["member_uid"] = visa_data['uid_number']
+                        visa_data_obj["last_name"] = visa_data['full_name']
+                        break
+                    except:
+                        print("re-attempt")
                 print(f"\nthis is visa object===>{visa_data_obj}")  
             else:
                 json_data = {
@@ -813,31 +824,36 @@ def compare_member_id():
                     "error_msg":"can't process the file please select another one."
                     }
                 return json_data
-                
-            id_data = json.loads(re_extract(new_data, 'id'))
-            date_formats = [
-                '%d %b %Y',  # e.g., "25 Dec 2020"
-                '%d %b %y',  # e.g., "25 Dec 20"
-                '%d %m %Y',  # e.g., "25 12 2020"
-                '%d/%m/%Y',   # e.g., "25/12/2020"
-                '%d-%m-%Y',
-                '%d/%m/%y',
-                '%Y/%m/%d'
-            ]
-
-            birthday_date = None
-
-            # Try each date format until successful
-            for date_format in date_formats:
+            while True:
                 try:
-                    birthday_date = datetime.strptime(id_data['date_of_birth'], date_format)
-                    break  # Date parsed successfully; exit the loop
-                except ValueError:
-                    continue   
-            formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-            id_data_obj["emirates_id"] = id_data['ID_number']
-            id_data_obj["last_name"] = id_data['full_name'].replace('\n', ' ')
-            id_data_obj["date_of_birth"] = str(formatted_birthday)
+
+                    id_data = json.loads(re_extract(new_data, 'id'))
+                    date_formats = [
+                        '%d %b %Y',  # e.g., "25 Dec 2020"
+                        '%d %b %y',  # e.g., "25 Dec 20"
+                        '%d %m %Y',  # e.g., "25 12 2020"
+                        '%d/%m/%Y',   # e.g., "25/12/2020"
+                        '%d-%m-%Y',
+                        '%d/%m/%y',
+                        '%Y/%m/%d'
+                    ]
+
+                    birthday_date = None
+
+                    # Try each date format until successful
+                    for date_format in date_formats:
+                        try:
+                            birthday_date = datetime.strptime(id_data['date_of_birth'], date_format)
+                            break  # Date parsed successfully; exit the loop
+                        except ValueError:
+                            continue   
+                    formatted_birthday = birthday_date.strftime('%Y-%m-%d')
+                    id_data_obj["emirates_id"] = id_data['ID_number']
+                    id_data_obj["last_name"] = id_data['full_name'].replace('\n', ' ')
+                    id_data_obj["date_of_birth"] = str(formatted_birthday)
+                    break
+                except:
+                    print("re-attempt")
 
             print(f"\nthis is id object===>{id_data_obj}")
             
@@ -886,36 +902,41 @@ def compare_member_id():
                     "error_msg":"can't process the file please select another one."
                     }
             return json_data
-        
-        passport_data = json.loads(re_extract(new_data, 'pass'))
-
-        date_formats = [
-            '%d %b %Y',  # e.g., "25 Dec 2020"
-            '%d %b %y',  # e.g., "25 Dec 20"
-            '%d %m %Y',  # e.g., "25 12 2020"
-            '%d/%m/%Y',   # e.g., "25/12/2020"
-            '%d-%m-%Y',
-            '%d/%m/%y',
-            '%Y/%m/%d'
-        ]
-
-        birthday_date = None
-
-        # Try each date format until successful
-        for date_format in date_formats:
+        while True:
             try:
-                birthday_date = datetime.strptime(passport_data['date_of_birth'], date_format)
-                break  # Date parsed successfully; exit the loop
-            except ValueError:
-                # This except block catches the ValueError if parsing fails,
-                # and continues to the next iteration.
-                continue                
 
-        formatted_birthday = birthday_date.strftime('%Y-%m-%d')
-        passport_data_obj["last_name"] =temp['surname']
-        passport_data_obj["date_of_birth"] = str(formatted_birthday)
-        passport_data_obj["nationality"] = passport_data['country_name'].split()[-1]
-        passport_data_obj["passport_number"] = passport_data['passport_number'].replace(" ","")
+                passport_data = json.loads(re_extract(new_data, 'pass'))
+
+                date_formats = [
+                    '%d %b %Y',  # e.g., "25 Dec 2020"
+                    '%d %b %y',  # e.g., "25 Dec 20"
+                    '%d %m %Y',  # e.g., "25 12 2020"
+                    '%d/%m/%Y',   # e.g., "25/12/2020"
+                    '%d-%m-%Y',
+                    '%d/%m/%y',
+                    '%Y/%m/%d'
+                ]
+
+                birthday_date = None
+
+                # Try each date format until successful
+                for date_format in date_formats:
+                    try:
+                        birthday_date = datetime.strptime(passport_data['date_of_birth'], date_format)
+                        break  # Date parsed successfully; exit the loop
+                    except ValueError:
+                        # This except block catches the ValueError if parsing fails,
+                        # and continues to the next iteration.
+                        continue                
+
+                formatted_birthday = birthday_date.strftime('%Y-%m-%d')
+                passport_data_obj["last_name"] =temp['surname']
+                passport_data_obj["date_of_birth"] = str(formatted_birthday)
+                passport_data_obj["nationality"] = passport_data['country_name'].split()[-1]
+                passport_data_obj["passport_number"] = passport_data['passport_number'].replace(" ","")
+                break
+            except:
+                print("re-attempt")
 
         print(f"\nthis is passport object===>{passport_data_obj}")
 
