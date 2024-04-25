@@ -27,7 +27,10 @@ def create_image_from_base64(base64_string, output_file):
     
     # Create image from bytes
     image = Image.open(io.BytesIO(image_data))
-    
+    if image.mode in ('RGBA', 'LA'):
+        background = Image.new('RGB', image.size, (255, 255, 255))
+        background.paste(image, mask=image.split()[3])  # 3 is the alpha channel
+        image = background
     # Save the image to a file
     image.save(output_file)
 
@@ -47,6 +50,7 @@ def classify_base64_code(base64_code):
     if decoded_data[:4] == b'%PDF':
         return 'PDF'
     elif decoded_data.startswith(b'\xFF\xD8\xFF') or decoded_data.startswith(b'\x89PNG\r\n\x1a\n'):
+        print("image\n")
         return 'Image'
     else:
         return 'other'
