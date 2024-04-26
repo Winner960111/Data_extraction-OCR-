@@ -200,7 +200,7 @@ def extract_data_member(file_name, id):
             if 'IDNumber' not in data.replace("\n","").replace(" ",""):
                 return 'no'
         elif id == 'pass':
-            if 'passportn' in data.replace("\n","").replace(" ","").lower():
+            if 'passport' in data.replace("\n","").replace(" ","").lower():
                 if 'U.I.D' in data.replace("\n","").replace(" ",""):
                     return 'no'
             else:
@@ -506,7 +506,7 @@ def compare_id():
                 json_data = {
                     "score":0,
                     "status":'not processed',
-                    "error_msg":"can't process the file please select another one."
+                    "error_msg":"The file has not been processed - wrong type ( .jpg, .png, .pdf)"
                     }
                 return json_data
             
@@ -550,7 +550,12 @@ def compare_id():
             if formatted_birthday > current_date:
                 percent += 1
             else:
-                return "Expiry date was expired."
+                json_data = {
+                    "score":0,
+                    "status":'not processed',
+                    "error_msg":"Expiry date was expired."
+                    }
+                return json_data
 
             percent = int(percent/3*100)
             if percent == 100:
@@ -599,7 +604,7 @@ def compare_id():
                 json_data = {
                     "score":0,
                     "status":'not processed',
-                    "error_msg":"can't process the file please select another one."
+                    "error_msg":"The file has not been processed - wrong type ( .jpg, .png, .pdf)"
                     }
                 return json_data
 
@@ -680,7 +685,12 @@ def compare_member_id():
                     try:
                         extract_info = extract_data_member("visa.pdf","visa")
                         if extract_info == 'no':
-                            return "Not the right visa file."
+                            json_data = {
+                                "score":0,
+                                "status":'not processed',
+                                "error_msg":"Not the right visa file."
+                                }
+                            return json_data
                         temp = json.loads(extract_info)
 
                         new_data = temp['date_of_birth'].replace(" ", "\n") + '\n' + temp["full_name"].replace(" ", "\n") + '\n' + temp['uid_number'].replace(" ","\n")
@@ -727,7 +737,12 @@ def compare_member_id():
                     try:
                        extract_info = extract_data_member("visa.jpg","visa") 
                        if extract_info == 'no':
-                           return "Not the right visa file."
+                           json_data = {
+                                "score":0,
+                                "status":'not processed',
+                                "error_msg":"Not the right visa file."
+                                }
+                           return json_data
                        temp = json.loads(extract_info)
 
                        new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['uid_number'].replace(" ","\n")
@@ -769,7 +784,7 @@ def compare_member_id():
                 json_data = {
                     "score":0,
                     "status":'not processed',
-                    "error_msg":"can't process the file please select another one."
+                    "error_msg":"The file has not been processed - wrong type ( .jpg, .png, .pdf)"
                     }
                 return json_data
             
@@ -794,7 +809,12 @@ def compare_member_id():
                         try:
                             extract_info = extract_data_member("ID_0.jpg","id")
                             if extract_info == 'no':
-                                return "Not the right ID file."
+                                json_data = {
+                                    "score":0,
+                                    "status":'not processed',
+                                    "error_msg":"Not the right ID file."
+                                    }
+                                return json_data
                             temp = json.loads(extract_info)
                             new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['ID_number'].replace(" ","\n")
                             break
@@ -805,7 +825,12 @@ def compare_member_id():
                         try:
                             extract_info = extract_data_member("ID.pdf","id")
                             if extract_info == 'no':
-                                return "Not the right ID file."
+                                json_data = {
+                                    "score":0,
+                                    "status":'not processed',
+                                    "error_msg":"Not the right ID file."
+                                    }
+                                return json_data
                             temp = json.loads(extract_info)
                             new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['ID_number'].replace(" ","\n")
                             break
@@ -819,7 +844,12 @@ def compare_member_id():
                         try:
                             extract_info = extract_data_member("ID.jpg","id")
                             if extract_info == 'no':
-                                    return "Not the right ID file."
+                                    json_data = {
+                                        "score":0,
+                                        "status":'not processed',
+                                        "error_msg":"Not the right ID file."
+                                        }
+                                    return json_data
                             temp = json.loads(extract_info)
                             new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp["full_name"].replace(" ", "\n") + ', ' + temp['ID_number'].replace(" ","\n")
                             break
@@ -829,7 +859,7 @@ def compare_member_id():
                 json_data = {
                     "score":0,
                     "status":'not processed',
-                    "error_msg":"can't process the file please select another one."
+                    "error_msg":"The file has not been processed - wrong type ( .jpg, .png, .pdf)"
                     }
                 return json_data
             while True:
@@ -883,7 +913,12 @@ def compare_member_id():
                 try:
                     extract_info = extract_data_member("passport.pdf","pass")
                     if extract_info == 'no':
-                                return "Not the right Passport file."
+                        json_data = {
+                            "score":0,
+                            "status":'not processed',
+                            "error_msg":"Not the right passport file."
+                            }
+                        return json_data
                     temp = json.loads(extract_info)
                     new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
                     break
@@ -897,7 +932,11 @@ def compare_member_id():
                 try:
                     extract_info = extract_data_member("passport.jpg","pass")
                     if extract_info == 'no':
-                        print("Not the right Passport file.")
+                        json_data = {
+                            "score":0,
+                            "status":'not processed',
+                            "error_msg":"Not the right passport file."
+                            }
                         return "Not the right Passport file."
                     temp = json.loads(extract_info)
                     new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
@@ -908,7 +947,7 @@ def compare_member_id():
             json_data = {
                     "score":0,
                     "status":'not processed',
-                    "error_msg":"can't process the file please select another one."
+                    "error_msg":"The file has not been processed - wrong type ( .jpg, .png, .pdf)"
                     }
             return json_data
         while True:
@@ -1017,8 +1056,13 @@ def compare_member_id():
         print(f"this is percent===>{json_data}")
         return json_data
     except Exception as e:
+        json_data = {
+                "score":0,
+                "status":'error',
+                "error_msg":'Failed'
+            }
         print(e)
-        return 'Failed'
+        return json_data
     
 if __name__ == '__main__':
     app.run(debug=True, port = 5050, host='0.0.0.0')
