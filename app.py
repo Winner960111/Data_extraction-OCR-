@@ -173,7 +173,7 @@ def extract_data_member(file_name, id):
 
                 result = json.loads(response.text)
                 data = result["amazon"]["text"]
-            # print(f"this is amazon data +++++>{data}")
+                # print(f"this is amazon data +++++>{data}")
 
         else:
             files = {"file": open(f"./data/{file_name}", 'rb')}
@@ -191,7 +191,8 @@ def extract_data_member(file_name, id):
             data = result["google"]["text"]
             if file_name == 'visa.jpg':
                 data = data.replace(" ","\n")
-        # print(f"this is data +++++>{data}")
+            print(f"this is data +++++>{data}")
+
         if id == 'visa':
             if 'U.I.D' not in data.replace("\n","").replace(" ",""):
                 return 'no'
@@ -199,7 +200,10 @@ def extract_data_member(file_name, id):
             if 'IDNumber' not in data.replace("\n","").replace(" ",""):
                 return 'no'
         elif id == 'pass':
-            if 'passportn' in data.replace("\n","").replace(" ","").lower() and 'U.I.D' in data.replace("\n","").replace(" ",""):
+            if 'passportn' in data.replace("\n","").replace(" ","").lower():
+                if 'U.I.D' in data.replace("\n","").replace(" ",""):
+                    return 'no'
+            else:
                 return 'no'
             
         if id == 'pass':
@@ -284,7 +288,7 @@ def extract_data_member(file_name, id):
                                 },
                                 "full_name": {
                                     "type": "string",
-                                    "description": "Extract the full name from given information. If its information isn't exist in the contents, you should answer as empty.",
+                                    "description": "Extract the full name from given information.",
                                 }, 
                             },
                             "required": ["date_of_birth", "uid_number", "full_name"]
@@ -893,7 +897,8 @@ def compare_member_id():
                 try:
                     extract_info = extract_data_member("passport.jpg","pass")
                     if extract_info == 'no':
-                                return "Not the right Passport file."
+                        print("Not the right Passport file.")
+                        return "Not the right Passport file."
                     temp = json.loads(extract_info)
                     new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
                     break
