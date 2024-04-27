@@ -688,7 +688,7 @@ def compare_member_id():
                             json_data = {
                                 "score":0,
                                 "status":'not processed',
-                                "error_msg":"Not the right visa file."
+                                "error_msg":"Visa file is not correct"
                                 }
                             return json_data
                         temp = json.loads(extract_info)
@@ -740,7 +740,7 @@ def compare_member_id():
                            json_data = {
                                 "score":0,
                                 "status":'not processed',
-                                "error_msg":"Not the right visa file."
+                                "error_msg":"Visa file is not correct"
                                 }
                            return json_data
                        temp = json.loads(extract_info)
@@ -812,7 +812,7 @@ def compare_member_id():
                                 json_data = {
                                     "score":0,
                                     "status":'not processed',
-                                    "error_msg":"Not the right ID file."
+                                    "error_msg":"ID file is not correct"
                                     }
                                 return json_data
                             temp = json.loads(extract_info)
@@ -828,7 +828,7 @@ def compare_member_id():
                                 json_data = {
                                     "score":0,
                                     "status":'not processed',
-                                    "error_msg":"Not the right ID file."
+                                    "error_msg":"ID file is not correct"
                                     }
                                 return json_data
                             temp = json.loads(extract_info)
@@ -847,7 +847,7 @@ def compare_member_id():
                                     json_data = {
                                         "score":0,
                                         "status":'not processed',
-                                        "error_msg":"Not the right ID file."
+                                        "error_msg":"ID file is not correct"
                                         }
                                     return json_data
                             temp = json.loads(extract_info)
@@ -916,7 +916,7 @@ def compare_member_id():
                         json_data = {
                             "score":0,
                             "status":'not processed',
-                            "error_msg":"Not the right passport file."
+                            "error_msg":"Passport file is not correct"
                             }
                         return json_data
                     temp = json.loads(extract_info)
@@ -935,9 +935,9 @@ def compare_member_id():
                         json_data = {
                             "score":0,
                             "status":'not processed',
-                            "error_msg":"Not the right passport file."
+                            "error_msg":"Passport file is not correct"
                             }
-                        return "Not the right Passport file."
+                        return json_data
                     temp = json.loads(extract_info)
                     new_data = temp['date_of_birth'].replace(" ", "\n") + ', ' + temp['country_name'].replace(" ", "\n") + ', ' + temp['passport_number']
                     break
