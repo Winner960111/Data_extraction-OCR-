@@ -568,7 +568,7 @@ def compare_id():
                 json_data = {
                     "score":percent,
                     "status":'processed',
-                    "error_msg":f"Not matching, the information that didn't match: {error}"
+                    "error_msg":f"The inserted information is NOT MATCHING. Specifically, : {error}"
                 }
             print(f"percent===>{json_data}")
             return json_data
@@ -635,7 +635,7 @@ def compare_id():
                 json_data = {
                     "score":percent,
                     "status":'processed',
-                    "error_msg":f"Not matching, the information that didn't match: {error}"
+                    "error_msg":f"The inserted information is NOT MATCHING. Specifically, : {error}"
                 }
             print(f"percent===>{json_data}")
             return json_data
@@ -659,6 +659,28 @@ def compare_member_id():
         input_data["date_of_birth"] = request.json['date_of_birth']
         input_data["nationality"] = request.json['nationality']
         input_data["passport_number"] = request.json['passport_number']
+
+        if not upload_emirates_id_base64 and input_data["emirates_id"]:
+            json_data = {
+                        "score":0,
+                        "status":'not processed',
+                        "error_msg":"Despite ID file isn't exist, ID number has been inputted."
+                        }
+            return json_data
+        if not upload_passport_copy_base64 and input_data["passport_number"]:
+            json_data = {
+                        "score":0,
+                        "status":'not processed',
+                        "error_msg":"Despite Passport file isn't exist, Passport number has been inputted."
+                        }
+            return json_data
+        if not upload_visa_copy_base64 and input_data["member_uid"]:
+            json_data = {
+                        "score":0,
+                        "status":'not processed',
+                        "error_msg":"Despite Visa file isn't exist, U.I.D number has been inputted."
+                        }
+            return json_data
         print(f"\nthis is input info ====>{input_data}")
         visa_img = "./data/visa.jpg"
         passport = "./data/passport.jpg"
