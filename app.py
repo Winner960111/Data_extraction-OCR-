@@ -553,7 +553,7 @@ def compare_id():
                 json_data = {
                     "score":0,
                     "status":'not processed',
-                    "error_msg":"Expiry date was expired."
+                    "error_msg":"Trading license expired!"
                     }
                 return json_data
 
@@ -659,26 +659,11 @@ def compare_member_id():
         input_data["date_of_birth"] = request.json['date_of_birth']
         input_data["nationality"] = request.json['nationality']
         input_data["passport_number"] = request.json['passport_number']
-
-        if not upload_emirates_id_base64 and input_data["emirates_id"]:
+        if not upload_emirates_id_base64 and not upload_visa_copy_base64:
             json_data = {
                         "score":0,
                         "status":'not processed',
-                        "error_msg":"Despite ID file isn't exist, ID number has been inputted."
-                        }
-            return json_data
-        if not upload_passport_copy_base64 and input_data["passport_number"]:
-            json_data = {
-                        "score":0,
-                        "status":'not processed',
-                        "error_msg":"Despite Passport file isn't exist, Passport number has been inputted."
-                        }
-            return json_data
-        if not upload_visa_copy_base64 and input_data["member_uid"]:
-            json_data = {
-                        "score":0,
-                        "status":'not processed',
-                        "error_msg":"Despite Visa file isn't exist, U.I.D number has been inputted."
+                        "error_msg":"Neither EID nor Visa file are inserted"
                         }
             return json_data
         print(f"\nthis is input info ====>{input_data}")
@@ -689,6 +674,7 @@ def compare_member_id():
         visa_pdf = "./data/visa.pdf"
         eid_file = "./data/ID.jpg"
         eid_pdf = "./data/ID.pdf"
+
         if upload_visa_copy_base64:
             res = classify_base64_code(upload_visa_copy_base64)
             if res == 'PDF':
@@ -1002,7 +988,7 @@ def compare_member_id():
                 formatted_birthday = birthday_date.strftime('%Y-%m-%d')
                 passport_data_obj["last_name"] =temp['surname']
                 passport_data_obj["date_of_birth"] = str(formatted_birthday)
-                passport_data_obj["nationality"] = passport_data['country_name'].split()[-1]
+                passport_data_obj["nationality"] = passport_data['country_name']
                 passport_data_obj["passport_number"] = passport_data['passport_number'].replace(" ","")
                 break
             except:
@@ -1014,18 +1000,21 @@ def compare_member_id():
         success = 0
         error = ''
         for item in array:
+            if visa_data_obj[item] == '' and passport_data_obj[item] == '' and id_data_obj[item]:
+                success += 1
+                continue
             count = 0
             if visa_data_obj[item]:
                 if item == 'last_name' or item == 'nationality':
                     if input_data[item].replace(" ", "").lower() in visa_data_obj[item].replace(" ", "").lower():
                         count += 1
                     else:
-                        error = (f"{item} of Visa").replace("_", " ")
+                        error = item.replace("_", " ")
                 else:
                     if input_data[item] == visa_data_obj[item]:
                         count += 1
                     else:
-                        error = (f"{item} of Visa").replace("_", " ")
+                        error = item.replace("_", " ")
 
             else:
                 count += 1
@@ -1035,12 +1024,12 @@ def compare_member_id():
                     if input_data[item].replace(" ", "").lower() in id_data_obj[item].replace(" ", "").lower():
                         count += 1
                     else:
-                        error = (f"{item} of ID card").replace("_", " ")
+                        error = item.replace("_", " ")
                 else:
                     if input_data[item] == id_data_obj[item]:
                         count += 1
                     else:
-                        error = (f"{item} of ID card").replace("_", " ")
+                        error = item.replace("_", " ")
             else:
                 count += 1
 
@@ -1049,12 +1038,12 @@ def compare_member_id():
                     if input_data[item].replace(" ", "").lower() in passport_data_obj[item].replace(" ", "").lower():
                         count +=1
                     else:
-                        error = (f"{item} of passport").replace("_", " ")
+                        error = item.replace("_", " ")
                 else:
                     if input_data[item] == passport_data_obj[item]:
                         count += 1
                     else:
-                        error = (f"{item} of passport").replace("_", " ")
+                        error = item.replace("_", " ")
             else:
                 count += 1
             if count == 3:
@@ -1073,7 +1062,7 @@ def compare_member_id():
             json_data = {
                 "score":percent,
                 "status":'processed',
-                "error_msg":f"Not match, the inforamtion that didn't match:{error}"
+                "error_msg":f"The inserted information is NOT MATCHING. Specifically, {error}"
             }
         print(f"this is percent===>{json_data}")
         return json_data
