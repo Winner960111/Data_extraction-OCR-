@@ -12,6 +12,7 @@ import os
 from openai import OpenAI
 from flask import Flask, request
 import json
+
 load_dotenv()
 client = OpenAI()
 
