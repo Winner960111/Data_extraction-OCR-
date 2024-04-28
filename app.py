@@ -180,7 +180,7 @@ def extract_data_member(file_name, id):
             files = {"file": open(f"./data/{file_name}", 'rb')}
             url = "https://api.edenai.run/v2/ocr/ocr"
             data = {
-                "providers": "google",
+                "providers": "amazon",
                 "language": "en",
                 "fallback_providers": ""
             }
@@ -189,7 +189,7 @@ def extract_data_member(file_name, id):
             response = requests.post(url, data=data, files=files, headers=headers)
 
             result = json.loads(response.text)
-            data = result["google"]["text"]
+            data = result["amazon"]["text"]
             if file_name == 'visa.jpg':
                 data = data.replace(" ","\n")
             print(f"this is data +++++>{data}")
