@@ -65,7 +65,7 @@ def extract_data_sponsor(file_name, id):
                 "language": "en",
                 "fallback_providers": ""
             }
-            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjM1MjUxOTQtMTUyMy00OTNhLTkxNzMtODNkYjcwOTc1NGM0IiwidHlwZSI6ImFwaV90b2tlbiJ9.plqIfgXVVxTvIuVrv-zGV1Vn-QCc7lbADOpFUeKPEao"}
+            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmU0MDcxM2EtMWI2Zi00MGJkLWJjYTEtYWU5ZWE0YWVjY2IxIiwidHlwZSI6ImFwaV90b2tlbiJ9.NvPTlGemcWe4LJXXCxpzlsRl0Ag9yEay7wKMil3_6rg"}
 
             response = requests.post(url, data=data, files=files, headers=headers)
 
@@ -83,7 +83,7 @@ def extract_data_sponsor(file_name, id):
                 "language": "en",
                 "fallback_providers": ""
             }
-            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjM1MjUxOTQtMTUyMy00OTNhLTkxNzMtODNkYjcwOTc1NGM0IiwidHlwZSI6ImFwaV90b2tlbiJ9.plqIfgXVVxTvIuVrv-zGV1Vn-QCc7lbADOpFUeKPEao"}
+            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmU0MDcxM2EtMWI2Zi00MGJkLWJjYTEtYWU5ZWE0YWVjY2IxIiwidHlwZSI6ImFwaV90b2tlbiJ9.NvPTlGemcWe4LJXXCxpzlsRl0Ag9yEay7wKMil3_6rg"}
 
             response = requests.post(url, data=data, files=files, headers=headers)
 
@@ -168,7 +168,7 @@ def extract_data_member(file_name, id):
                     "language": "en",
                     "fallback_providers": ""
                 }
-                headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjM1MjUxOTQtMTUyMy00OTNhLTkxNzMtODNkYjcwOTc1NGM0IiwidHlwZSI6ImFwaV90b2tlbiJ9.plqIfgXVVxTvIuVrv-zGV1Vn-QCc7lbADOpFUeKPEao"}
+                headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmU0MDcxM2EtMWI2Zi00MGJkLWJjYTEtYWU5ZWE0YWVjY2IxIiwidHlwZSI6ImFwaV90b2tlbiJ9.NvPTlGemcWe4LJXXCxpzlsRl0Ag9yEay7wKMil3_6rg"}
 
                 response = requests.post(url, data=data, files=files, headers=headers)
 
@@ -184,7 +184,7 @@ def extract_data_member(file_name, id):
                 "language": "en",
                 "fallback_providers": ""
             }
-            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjM1MjUxOTQtMTUyMy00OTNhLTkxNzMtODNkYjcwOTc1NGM0IiwidHlwZSI6ImFwaV90b2tlbiJ9.plqIfgXVVxTvIuVrv-zGV1Vn-QCc7lbADOpFUeKPEao"}
+            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmU0MDcxM2EtMWI2Zi00MGJkLWJjYTEtYWU5ZWE0YWVjY2IxIiwidHlwZSI6ImFwaV90b2tlbiJ9.NvPTlGemcWe4LJXXCxpzlsRl0Ag9yEay7wKMil3_6rg"}
 
             response = requests.post(url, data=data, files=files, headers=headers)
 
