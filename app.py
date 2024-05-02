@@ -63,9 +63,9 @@ def extract_data_sponsor(file_name, id):
             data = {
                 "providers": "amazon",
                 "language": "en",
-                "fallback_providers": ""
+                "fallback_providers": "google"
             }
-            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmU0MDcxM2EtMWI2Zi00MGJkLWJjYTEtYWU5ZWE0YWVjY2IxIiwidHlwZSI6ImFwaV90b2tlbiJ9.NvPTlGemcWe4LJXXCxpzlsRl0Ag9yEay7wKMil3_6rg"}
+            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjM1MjUxOTQtMTUyMy00OTNhLTkxNzMtODNkYjcwOTc1NGM0IiwidHlwZSI6ImFwaV90b2tlbiJ9.plqIfgXVVxTvIuVrv-zGV1Vn-QCc7lbADOpFUeKPEao"}
 
             response = requests.post(url, data=data, files=files, headers=headers)
 
@@ -81,9 +81,9 @@ def extract_data_sponsor(file_name, id):
             data = {
                 "providers": "amazon",
                 "language": "en",
-                "fallback_providers": ""
+                "fallback_providers": "google"
             }
-            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmU0MDcxM2EtMWI2Zi00MGJkLWJjYTEtYWU5ZWE0YWVjY2IxIiwidHlwZSI6ImFwaV90b2tlbiJ9.NvPTlGemcWe4LJXXCxpzlsRl0Ag9yEay7wKMil3_6rg"}
+            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjM1MjUxOTQtMTUyMy00OTNhLTkxNzMtODNkYjcwOTc1NGM0IiwidHlwZSI6ImFwaV90b2tlbiJ9.plqIfgXVVxTvIuVrv-zGV1Vn-QCc7lbADOpFUeKPEao"}
 
             response = requests.post(url, data=data, files=files, headers=headers)
 
@@ -166,9 +166,9 @@ def extract_data_member(file_name, id):
                 data = {
                     "providers": "amazon",
                     "language": "en",
-                    "fallback_providers": ""
+                    "fallback_providers": "google"
                 }
-                headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmU0MDcxM2EtMWI2Zi00MGJkLWJjYTEtYWU5ZWE0YWVjY2IxIiwidHlwZSI6ImFwaV90b2tlbiJ9.NvPTlGemcWe4LJXXCxpzlsRl0Ag9yEay7wKMil3_6rg"}
+                headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjM1MjUxOTQtMTUyMy00OTNhLTkxNzMtODNkYjcwOTc1NGM0IiwidHlwZSI6ImFwaV90b2tlbiJ9.plqIfgXVVxTvIuVrv-zGV1Vn-QCc7lbADOpFUeKPEao"}
 
                 response = requests.post(url, data=data, files=files, headers=headers)
 
@@ -182,12 +182,12 @@ def extract_data_member(file_name, id):
             data = {
                 "providers": "amazon",
                 "language": "en",
-                "fallback_providers": ""
+                "fallback_providers": "google"
             }
-            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmU0MDcxM2EtMWI2Zi00MGJkLWJjYTEtYWU5ZWE0YWVjY2IxIiwidHlwZSI6ImFwaV90b2tlbiJ9.NvPTlGemcWe4LJXXCxpzlsRl0Ag9yEay7wKMil3_6rg"}
+            headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjM1MjUxOTQtMTUyMy00OTNhLTkxNzMtODNkYjcwOTc1NGM0IiwidHlwZSI6ImFwaV90b2tlbiJ9.plqIfgXVVxTvIuVrv-zGV1Vn-QCc7lbADOpFUeKPEao"}
 
             response = requests.post(url, data=data, files=files, headers=headers)
-
+            print(f"this is res===>,{response}")
             result = json.loads(response.text)
             data = result["amazon"]["text"]
             if file_name == 'visa.jpg':
